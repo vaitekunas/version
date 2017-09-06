@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
   "sort"
+  "io/ioutil"
 )
 
 const (
@@ -265,5 +266,46 @@ func increase(major, minor, patch bool, special, build string) error {
 
 // list lists all version of all repositories starting with root path
 func list(root string, all bool) {
+
+  if root == "" {
+    dir, err := os.Getwd()
+    if err != nil {
+      fmt.Println("could not change directory: %s", err.Error())
+    }
+    root = dir
+  }
+
+  repos := []string{}
+  repoVersions := map[string]*Versions{}
+
+  var scan func(string)
+  scan = func(dir string) {
+    files, err := ioutil.ReadDir(dir)
+    if err != nil {
+      return
+    }
+
+    for _, file := range files {
+      name := file.Name()
+      if file.IsDir() {
+        if name == ".git" {
+          v, errv := GetVersions(dir)
+          if errv != nil {
+            continue
+          }
+          repos = append(repos, dir)
+          repoVersions[dir] = v
+        }else if name[:1] != "." {
+          scan(fmt.Sprintf("%s/%s",dir,name))
+        }
+      }
+    }
+  }
+
+  scan(root)
+
+  sort.Strings(repos)
+  printVersionTable(repos, repoVersions, !all)
+
 
 }

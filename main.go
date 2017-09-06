@@ -30,20 +30,26 @@ func main() {
 	buildPtr := incCmd.String("build","", "set build metadata")
 
 	// Version list flags
-	listRootPtr := listCmd.String("root", os.Getenv("GOPATH"), "root path where listing version should start")
+	listRootPtr := listCmd.String("root", "", "root path where listing version should start")
+  listallPtr := listCmd.Bool("all", false, "show all versions")
 
 	// General flags
 	allPtr := flag.Bool("all", false, "show all versions")
 
 	// Plain version
 	if len(os.Args) == 1 {
-		versions, err := GetVersions("./")
+    root, err := os.Getwd()
+    if err != nil {
+      print("could not determine version: %s", err.Error())
+      os.Exit(1)
+    }
+		versions, err := GetVersions(root)
 		if err != nil {
 			print("could not determine version: %s", err.Error())
 			os.Exit(1)
 		}
 
-    printVersionTable(versions,!*allPtr)
+    printVersionTable([]string{root}, map[string]*Versions{root: versions}, !*allPtr)
 		os.Exit(0)
 	}
 
@@ -76,7 +82,7 @@ func main() {
 			print("could not determine version: %s", err.Error())
 			os.Exit(1)
 		}
-    printVersionTable(versions, !*allPtr)
+    printVersionTable([]string{os.Args[1]}, map[string]*Versions{os.Args[1]: versions}, !*allPtr)
     os.Exit(0)
 	}
 
@@ -89,7 +95,7 @@ func main() {
 
 	// List versions
 	if listCmd.Parsed() {
-		list(*listRootPtr, *allPtr)
+		list(*listRootPtr, *listallPtr)
 	}
 
 }

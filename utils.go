@@ -18,16 +18,7 @@ func print(in string, a ...interface{}) {
 }
 
 // printVersionTable displays version data in a table
-func printVersionTable(versions *Versions, last bool) {
-
-  if versions.Len() == 0 {
-    fmt.Println("No versions")
-    return
-  }
-
-  if last {
-    versions.versions = versions.versions[:1]
-  }
+func printVersionTable(repos []string, repoVersions map[string]*Versions, last bool) {
 
   current := func(v interface{}) interface{}{
     return color.New(color.Bold).Sprint(v)
@@ -37,25 +28,66 @@ func printVersionTable(versions *Versions, last bool) {
     return color.New(color.FgHiBlue).Sprint(v)
   }
 
-  table := lentele.New("Date", "Commit", "Version")
+  table := lentele.New("Repository", "Date", "Commit", "Version")
   if !last {
-    table.AddTitle("Complete list of repository versions")
+    if len(repos) > 1 {
+      table.AddTitle("All versions")
+    }else{
+      table.AddTitle("All versions per repository")
+    }
     table.AddTitle("(ordered from the highest to the lowest)")
   }else{
-    table.AddTitle("Current repository version")
+    if len(repos) > 1 {
+      table.AddTitle("Current versions per repository")
+    }else{
+      table.AddTitle("Current version")
+    }
   }
 
   if header, err := table.GetRowByName("header"); err == nil {
-    header.Modify(current,"Date", "Commit", "Version")
+    header.Modify(current,"Repository", "Date", "Commit", "Version")
   }
 
-  for i, version := range versions.versions {
-    row := table.AddRow("")
-    row.Insert(version.Date.Format("2006-01-02 15:04"), version.Commit, version.String())
-    if i == 0 {
-      row.Modify(blue,"Date", "Commit", "Version")
-    }else{
+  // Repository path format
+  longestRepo := 0
+  for _, repo := range repos {
+      if len(repo) > longestRepo {
+        longestRepo = len(repo)
+      }
+  }
 
+  longestVersion := 0
+  for _,versions := range repoVersions {
+    for _, version := range versions.versions {
+      if vlen := len(version.String()); vlen > longestVersion {
+        longestVersion = vlen
+      }
+    }
+  }
+
+  formatRepo := fmt.Sprintf("%%-%ds",longestRepo)
+  formatVersion := fmt.Sprintf("%%-%ds",longestVersion)
+
+  for _, repo := range repos {
+    versions, ok := repoVersions[repo]
+    if !ok {
+      continue
+    }
+    if last {
+      versions.versions = versions.versions[:1]
+    }
+
+    for i, version := range versions.versions {
+      row := table.AddRow("")
+      alignedRepo := fmt.Sprintf(formatRepo,repo)
+      alignedVersion := fmt.Sprintf(formatVersion,version.String())
+      if version.String() == "v0.0.0" {
+        alignedVersion = "N/A"
+      }
+      row.Insert(alignedRepo, version.Date.Format("2006-01-02 15:04"), version.Commit, alignedVersion)
+      if i == 0 && !last {
+        row.Modify(blue,"Repository","Date", "Commit", "Version")
+      }
     }
   }
 
@@ -63,5 +95,6 @@ func printVersionTable(versions *Versions, last bool) {
 
   table.Render(os.Stdout,false, true, true, lentele.LoadTemplate("modern"))
   fmt.Printf("\n\n")
+
 
 }
