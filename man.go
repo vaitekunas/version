@@ -36,16 +36,18 @@ func man(cmd string) {
 
 	case "increase":
 		fmt.Fprintf(os.Stderr, "\nUsage of %s:\n\n", b.Sprint("version increase"))
-		fmt.Fprintf(os.Stderr, "version increase [--repo=\"\"] [--golang] [{--major, --minor, --patch}]\n\n")
+		fmt.Fprintf(os.Stderr, "version increase [{--major, --minor, --patch}] [--special=\"\"] [--build=\"\"]\n\n")
 		fmt.Fprintf(os.Stderr, "The arguments are:\n\n")
-		fmt.Fprintf(os.Stderr, fmt.Sprintf("\t%s\t%s", out("--repo"), "path to the relevant repo, or a golang repo name\n"))
-		fmt.Fprintf(os.Stderr, fmt.Sprintf("\t%s\t%s", out("--golang"), "this is a golang repo, i.e. the true path is $GOPATH/src/$repo\n"))
 		fmt.Fprintf(os.Stderr, fmt.Sprintf("\t%s\t%s", out("--major"), "increase version by a major tick\n"))
 		fmt.Fprintf(os.Stderr, fmt.Sprintf("\t%s\t%s", out("--minor"), "increase version by a minor tick\n"))
 		fmt.Fprintf(os.Stderr, fmt.Sprintf("\t%s\t%s", out("--patch"), "increase version by a patch tick\n"))
+    fmt.Fprintf(os.Stderr, fmt.Sprintf("\t%s\t%s", out("--special"), "specify pre-release version\n"))
+    fmt.Fprintf(os.Stderr, fmt.Sprintf("\t%s\t%s", out("--build"), "add build-related metadata\n"))
 		fmt.Fprintf(os.Stderr, "\n")
 		fmt.Fprintf(os.Stderr, "Only a single tick option (major/minor/patch) is allowed per increase\n")
-		fmt.Fprintf(os.Stderr, "Command will fail if current version in .version has not been commited in the master branch\n")
+    fmt.Fprintf(os.Stderr, "Setting special and build identifiers without tick updates will use the current version\n")
+    fmt.Fprintf(os.Stderr, "Build metadata cannot be added to a release version, i.e. a pre-release version must be always specified\n")
+		fmt.Fprintf(os.Stderr, "Command will fail when attempting to set a version that is smaller than the current version\n")
 		fmt.Fprintf(os.Stderr, "Using \"version increase\" will bump the repository in pwd by a patch tick\n\n")
 
 	case "list":
@@ -56,6 +58,15 @@ func man(cmd string) {
 		fmt.Fprintf(os.Stderr, fmt.Sprintf("\t%s\t%s", out("--all"), "list all versions of each repo\n"))
 		fmt.Fprintf(os.Stderr, "\n")
 		fmt.Fprintf(os.Stderr, "Using \"version list\" will use pwd as the root directory\n\n")
+
+  case "":
+    fmt.Fprintf(os.Stderr, "\nUsage of %s:\n\n", b.Sprint("version"))
+		fmt.Fprintf(os.Stderr, "version [dir]\n\n")
+		fmt.Fprintf(os.Stderr, "The arguments are:\n\n")
+		fmt.Fprintf(os.Stderr, fmt.Sprintf("\t%s\t%s", out("--all"), "list all versions\n"))
+		fmt.Fprintf(os.Stderr, "\n")
+    fmt.Fprintf(os.Stderr, "Using \"version\" will display the current version of the repository in pwd\n")
+    fmt.Fprintf(os.Stderr, "Specifying a directory will display the version(s) of the repository contained there\n\n")
 
 	default:
 		fmt.Fprintf(os.Stderr, "\nUnknown command '%s'\n", b.Sprint(cmd))
