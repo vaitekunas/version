@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+  "bufio"
 	"os"
 	"os/exec"
 	"regexp"
@@ -10,6 +11,8 @@ import (
 	"time"
   "sort"
   "io/ioutil"
+
+  "github.com/fatih/color"
 )
 
 const (
@@ -255,11 +258,128 @@ MainLoop:
 
 }
 
+// GetLastCommit returns current commit
+func GetLastCommit(root string) (date time.Time, commit, author, message string, err error) {
+
+  // Change dir to repo root
+  if err := os.Chdir(root); err != nil {
+      return time.Now(), "", "", "", fmt.Errorf("could not change path to '%s': %s", root, err.Error())
+  }
+
+  // Get last log
+  // TODO: check if a tag is present
+  cmd := exec.Command("git", "log", "-1", `--pretty="%H\t%at\t%an\t%s"`)
+  out, err := cmd.Output()
+  if err != nil {
+      return time.Now(), "", "", "", fmt.Errorf("could not get last commit: %s", err.Error())
+  }
+
+  // Cleanup
+  outStr := strings.Trim(string(out), `"\n\r\b`)
+  parts := strings.Split(outStr,`\t`)
+
+  if len(parts) != 4 {
+    return time.Now(), "", "", "", fmt.Errorf("invalid git output")
+  }
+
+  // Parse UNIX timestamp
+  tint, err := strconv.ParseInt(parts[1], 10, 64)
+  if err != nil {
+    return time.Now(), "", "", "", fmt.Errorf("could not parse UNIX timestamp: %s", err.Error())
+  }
+  timestamp := time.Unix(tint, 0)
+
+  return timestamp, parts[0], parts[2], parts[3], nil
+}
+
 // increase increases repository's semantic version
 func increase(major, minor, patch bool, special, build string) error {
+
+  // Validate increment
 	if major && minor || major && patch || minor && patch {
-		return fmt.Errorf("cannot incrase more than one level: choose major, minor or patch")
+		return fmt.Errorf("cannot increase more than one level: choose major, minor or patch")
 	}
+
+  // Default increase is a patch tick
+  if !major && !minor && !patch && special == "" {
+    patch = true
+  }
+
+  // Get pwd
+  root, err := os.Getwd()
+  if err != nil {
+    return fmt.Errorf("could not determine current directory: %s", err.Error())
+  }
+
+  // Determine current version
+  versions, err := GetVersions(root)
+  if err != nil {
+    return fmt.Errorf("could not determine version: %s", err.Error())
+  }
+  current := versions.versions[0]
+
+  newVersion := &Version{
+    Major: current.Major,
+    Minor: current.Minor,
+    Patch: current.Patch,
+    Special: special,
+    Build: build,
+  }
+  if major {
+    newVersion.Major++
+    newVersion.Minor = 0
+    newVersion.Patch = 0
+  }
+  if minor {
+    newVersion.Minor++
+    newVersion.Patch = 0
+  }
+  if patch {
+    newVersion.Patch++
+  }
+
+  // Validate
+  if !Larger(newVersion, current)   {
+    print("Cannot apply increase: proposed version (%s) is lower than the current version (%s)",newVersion.String(), current.String())
+    os.Exit(1)
+  }
+
+  // Get last commit
+  ctime, commit, author, message, err := GetLastCommit(root)
+  if err != nil {
+    return fmt.Errorf("could not get last commit: %s", err.Error())
+  }
+
+  bold := color.New(color.Bold).Sprint
+
+  fmt.Println("")
+
+  fmt.Println("Repository:")
+  print(root)
+  fmt.Println("")
+
+  fmt.Println("Commit to be tagged as the new version:")
+  print("Date: %s", bold(ctime.Format("2006-01-02 15:04:06")))
+  print("Hash: %s", bold(commit))
+  print("Message: %s", bold(message))
+  print("Author: %s", bold(author))
+  fmt.Println("")
+
+  fmt.Println("Version increment:")
+  if current.String() != "v0.0.0" {
+    print("Current version: %s", bold(current.String()))
+  }else{
+    print("Current version: %s",bold("none"))
+  }
+  print("Proposed version after increase: %s",bold(newVersion.String()))
+
+  fmt.Println("")
+  fmt.Println(bold("Apply new version? [Y/n] (default: n):"))
+  reader := bufio.NewReader(os.Stdin)
+  text, _ := reader.ReadString('\n')
+  if text != "Y\n" {
+    print("Increase aborted")
+  }
 
 	return nil
 }
