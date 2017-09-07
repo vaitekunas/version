@@ -19,9 +19,9 @@ func printErr(in string, a ...interface{}) {
 	fmt.Printf(" %s %s\n", br.Sprint("◈"), b.Sprint(in))
 }
 
+// getRepoName formats a repo name
 func getRepoName(dir string) string {
-	root := ""
-	repo := ""
+	var root, repo string
 
 	if strings.Contains(dir, "github.com") {
 		idx := strings.Index(dir, "github.com")
@@ -98,9 +98,11 @@ func printVersionTable(repos []string, repoVersions map[string]*Versions, last b
 
 	for _, repo := range repos {
 		versions, ok := repoVersions[repo]
+
 		if !ok {
 			continue
 		}
+
 		if last && len(versions.versions) > 0 {
 			versions.versions = versions.versions[:1]
 		}
@@ -121,6 +123,11 @@ func printVersionTable(repos []string, repoVersions map[string]*Versions, last b
 
 	table.AddFootnote("Version order is based on the semantic versioning specification (http://semver.org/)")
 	table.AddFootnote("Commits without version tags are not shown")
+
+	if table.GetRowCount() == 1 {
+		fmt.Println("\nCould not find a single version\n")
+		return
+	}
 
 	table.Render(os.Stdout, false, true, false, lentele.LoadTemplate("classic"))
 	fmt.Printf("\n")

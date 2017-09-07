@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-// getLastRepoVersion returns the highest version from committed tags
+// GetVersions returns all the versions from committed tags
 func GetVersions(dir string) (*Versions, error) {
 
 	// Change dir to repo root

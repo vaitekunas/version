@@ -1,8 +1,8 @@
 # version [![godoc](https://img.shields.io/badge/go-documentation-blue.svg)](https://godoc.org/github.com/vaitekunas/version) [![Go Report Card](https://goreportcard.com/badge/github.com/vaitekunas/version)](https://goreportcard.com/report/github.com/vaitekunas/version) [![Build Status](https://travis-ci.org/vaitekunas/version.svg?branch=master)](https://travis-ci.org/vaitekunas/version) [![Coverage Status](https://coveralls.io/repos/github/vaitekunas/version/badge.svg?branch=master)](https://coveralls.io/github/vaitekunas/version?branch=master)
 
-`version` is a small utility used to set and review semantic versions ([http://semver.org/](http://semver.org/))
-of a git repository. It allows you to see already set versions and increase the most current version by a major/minor/patch/special
-tick without the need to investigate which version should be set and if it does not violate the semver rules.
+`version` is a small utility for setting and reviewing semantic versions ([http://semver.org/](http://semver.org/))
+of a git repository. It allows you to list releases and increase the most current version by a major/minor/patch/special
+tick without the need to investigate which version should be set and whether it violates the semver specification.
 
 An example of a very simplified workflow (commiting code, increasing version and pushing it to origin, e.g github):
 
@@ -130,7 +130,7 @@ Version increment:
 Tag new version? [Y/n] (default: n):
 ```
 
-if current version introduces breaking changes, then a major version update is
+if the current version introduces breaking changes, then a major version update is
 more appropriate:
 
 ```shell

@@ -15,6 +15,8 @@ import (
 )
 
 const (
+
+	// Regex used to parse a semver-valid version
 	V_REGEX = `v(?P<major>\d+).(?P<minor>\d+).(?P<patch>\d+)(-(?P<special>[a-z0-9\.-]+)(\+(?P<build>[a-z0-9\.-]+))?)?`
 )
 
@@ -184,7 +186,13 @@ func Increase(major, minor, patch bool, special, build string) error {
 	if err != nil {
 		return fmt.Errorf("could not determine version: %s", err.Error())
 	}
-	current := versions.versions[0]
+	var current *Version
+
+	if len(versions.versions) >= 1 {
+		current = versions.versions[0]
+	} else {
+		current = &Version{}
+	}
 
 	newVersion := &Version{
 		Major:   current.Major,
