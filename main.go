@@ -10,7 +10,7 @@ import (
 func init() {
 	_, err := exec.LookPath("git")
 	if err != nil {
-		print("Git not found. Cannot proceed, sorry")
+		printErr("Git not found. Cannot proceed, sorry")
 		os.Exit(1)
 	}
 	flag.Usage = help
@@ -20,7 +20,6 @@ func main() {
 
 	// Subcommands
 	incCmd := flag.NewFlagSet("increase", flag.ExitOnError)
-	listCmd := flag.NewFlagSet("list", flag.ExitOnError)
 
 	// Version increase flags
 	majorPtr := incCmd.Bool("major", false, "increase major version")
@@ -30,72 +29,46 @@ func main() {
 	buildPtr := incCmd.String("build", "", "set build metadata")
 
 	// Version list flags
-	listRootPtr := listCmd.String("root", "", "root path where listing version should start")
-	listallPtr := listCmd.Bool("all", false, "show all versions")
-
-	// General flags
-	allPtr := flag.Bool("all", false, "show all versions")
-
-	// Plain version
-	if len(os.Args) == 1 {
-		root, err := os.Getwd()
-		if err != nil {
-			print("could not determine version: %s", err.Error())
-			os.Exit(1)
-		}
-		versions, err := GetVersions(root)
-		if err != nil {
-			print("could not determine version: %s", err.Error())
-			os.Exit(1)
-		}
-
-		printVersionTable([]string{root}, map[string]*Versions{root: versions}, !*allPtr)
-		os.Exit(0)
-	}
+	listRootPtr := flag.String("root", "", "root path where listing version should start")
+	listallPtr := flag.Bool("all", false, "show all versions")
 
 	// Parse subcommand flags
-	switch strings.ToLower(os.Args[1]) {
+	if len(os.Args) > 1 {
+		switch strings.ToLower(os.Args[1]) {
 
-	case "increase":
-		incCmd.Parse(os.Args[2:])
+		case "increase":
+			incCmd.Parse(os.Args[2:])
 
-	case "list":
-		listCmd.Parse(os.Args[2:])
+		case "help":
+			if len(os.Args) >= 3 {
+				man(os.Args[2])
+			} else {				
+        man("")
+			}
+			os.Exit(0)
 
-	case "help":
-		if len(os.Args) >= 3 {
-			man(os.Args[2])
-		} else {
-			flag.Usage()
+    case "--all", "--root":
+
+    default:
+      flag.Usage()
+      os.Exit(1)
 		}
 
-	default: // Assuming "version path/to/repo" was used
-		flag.CommandLine.Parse(os.Args[2:])
-
-		if f, err := os.Stat(os.Args[1]); os.IsNotExist(err) || (f != nil && !f.IsDir()) {
-			flag.Usage()
-			os.Exit(1)
-		}
-
-		versions, err := GetVersions(os.Args[1])
-		if err != nil {
-			print("could not determine version: %s", err.Error())
-			os.Exit(1)
-		}
-		printVersionTable([]string{os.Args[1]}, map[string]*Versions{os.Args[1]: versions}, !*allPtr)
-		os.Exit(0)
-	}
-
-	// Increase version
-	if incCmd.Parsed() {
-		if err := Increase(*majorPtr, *minorPtr, *patchPtr, *specialPtr, *buildPtr); err != nil {
-			print("could not increase version: %s", err.Error())
+		// Increase version
+		if incCmd.Parsed() {
+			if err := Increase(*majorPtr, *minorPtr, *patchPtr, *specialPtr, *buildPtr); err != nil {
+				printErr("FAILED: %s", err.Error())
+			}
+			os.Exit(0)
 		}
 	}
+
+	// Parse global
+	flag.Parse()
 
 	// List versions
-	if listCmd.Parsed() {
-		List(strings.TrimRight(*listRootPtr, "/"), *listallPtr)
+	if err := List(strings.TrimRight(*listRootPtr, "/"), *listallPtr); err != nil {
+		printErr("FAILED: %s", err.Error())
 	}
 
 }

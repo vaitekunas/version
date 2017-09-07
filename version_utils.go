@@ -149,5 +149,35 @@ func GetLastCommit(root string) (date time.Time, commit, author, message string,
 		return time.Now(), "", "", "", nil, fmt.Errorf("could not extract version")
 	}
 
-	return v.Date, parts[0], parts[2], parts[3], v, nil
+	return v.Date, parts[0], parts[2], parts[4], v, nil
+}
+
+// GetBranch returns current branch
+func GetBranch(root string) (string, error) {
+
+		// Change dir to repo root
+		if err := os.Chdir(root); err != nil {
+			return "", fmt.Errorf("could not change path to '%s': %s", root, err.Error())
+		}
+
+		// Get last log
+		cmd := exec.Command("git", "branch","--all")
+		out, err := cmd.Output()
+		if err != nil {
+			return "", fmt.Errorf("could not get branches: %s", err.Error())
+		}
+
+		// Find active branch
+		for _, line := range strings.Split(string(out),"\n") {
+			line = strings.TrimSpace(line)
+			line = strings.Trim(line, `"`)
+			if strings.HasPrefix(line, "*") {
+				if len(line) < 3 {
+					return "", fmt.Errorf("invalid branch name")
+				}
+				return line[2:], nil
+			}
+		}
+
+		return "", fmt.Errorf("could not determine active branch")
 }

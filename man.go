@@ -17,11 +17,11 @@ func help() {
 	out := func(s string) string { return fmt.Sprintf(" %s  %s", c.Sprint("◈"), b.Sprint(s)) }
 
 	fmt.Fprintf(os.Stderr, "\nUsage of %s:\n\n", b.Sprint(os.Args[0]))
-	fmt.Fprintf(os.Stderr, "version command [arguments]\n\n")
+	fmt.Fprintf(os.Stderr, "version [command] [arguments]\n\n")
 	fmt.Fprintf(os.Stderr, "The commands are:\n\n")
 	fmt.Fprintf(os.Stderr, fmt.Sprintf("\t%s\t%s", out("increase"), "increases the version by a major/minor/patch tick\n"))
-	fmt.Fprintf(os.Stderr, fmt.Sprintf("\t%s\t%s", out("list"), "lists versions of all repositories starting from some root path\n"))
 	fmt.Fprintf(os.Stderr, "\n")
+  fmt.Fprintf(os.Stderr, "Using \"version [--root=\"\"] [--all]\" lists available releases/versions\n")
 	fmt.Fprintf(os.Stderr, "Use \"version help [command]\" for more information about a command\n\n")
 
 }
@@ -50,23 +50,15 @@ func man(cmd string) {
 		fmt.Fprintf(os.Stderr, "Command will fail when attempting to set a version that is smaller than the current version\n")
 		fmt.Fprintf(os.Stderr, "Using \"version increase\" will bump the repository in pwd by a patch tick\n\n")
 
-	case "list":
-		fmt.Fprintf(os.Stderr, "\nUsage of %s:\n\n", b.Sprint("version list"))
-		fmt.Fprintf(os.Stderr, "version list [--root=\"\"] [--all]\n\n")
-		fmt.Fprintf(os.Stderr, "The arguments are:\n\n")
-		fmt.Fprintf(os.Stderr, fmt.Sprintf("\t%s\t%s", out("--root"), "root directory from which to start listing repository versions\n"))
-		fmt.Fprintf(os.Stderr, fmt.Sprintf("\t%s\t%s", out("--all"), "list all versions of each repo\n"))
-		fmt.Fprintf(os.Stderr, "\n")
-		fmt.Fprintf(os.Stderr, "Using \"version list\" will use pwd as the root directory\n\n")
-
   case "":
     fmt.Fprintf(os.Stderr, "\nUsage of %s:\n\n", b.Sprint("version"))
-		fmt.Fprintf(os.Stderr, "version [dir]\n\n")
+		fmt.Fprintf(os.Stderr, "version [--root=\"\"] [--all]\n\n")
 		fmt.Fprintf(os.Stderr, "The arguments are:\n\n")
+    fmt.Fprintf(os.Stderr, fmt.Sprintf("\t%s\t%s", out("--root"), "root path from which to start listing repositories and their versions\n"))
 		fmt.Fprintf(os.Stderr, fmt.Sprintf("\t%s\t%s", out("--all"), "list all versions\n"))
 		fmt.Fprintf(os.Stderr, "\n")
     fmt.Fprintf(os.Stderr, "Using \"version\" will display the current version of the repository in pwd\n")
-    fmt.Fprintf(os.Stderr, "Specifying a directory will display the version(s) of the repository contained there\n\n")
+    fmt.Fprintf(os.Stderr, "Specifying a directory will recursively display the version(s) of the repositories contained there\n\n")
 
 	default:
 		fmt.Fprintf(os.Stderr, "\nUnknown command '%s'\n", b.Sprint(cmd))

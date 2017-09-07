@@ -208,7 +208,7 @@ func Increase(major, minor, patch bool, special, build string) error {
 
 	// Validate
 	if !Larger(newVersion, current) {
-		print("Cannot apply increase: proposed version (%s) is lower than the current version (%s)", newVersion.String(), current.String())
+		printErr("cannot apply increase: proposed version (%s) is lower than the current version (%s)", newVersion.String(), current.String())
 		os.Exit(1)
 	}
 
@@ -221,9 +221,17 @@ func Increase(major, minor, patch bool, special, build string) error {
 		return fmt.Errorf("current commit already has a version: %s", version.String())
 	}
 
+  // Get branch
+  branch, err := GetBranch(root)
+  if err != nil {
+    return fmt.Errorf("could not get active branch name: %s", err.Error())
+  }
+
 	// Formatting functions
 	// TODO: put all of this in utils.go and unify outputs
 	bold := color.New(color.Bold).Sprint
+	abort := color.New(color.FgHiRed).Add(color.Bold).Sprint
+	sucess := color.New(color.FgHiGreen).Add(color.Bold).Sprint
 	bullet := func() string { return color.New(color.FgHiBlue).Sprint("◈") }
 	out := func(s string, a ...interface{}) {
 		if len(a) > 0 {
@@ -240,6 +248,7 @@ func Increase(major, minor, patch bool, special, build string) error {
 	fmt.Println("")
 
 	fmt.Println("Commit to be tagged as the new version:")
+  out("Branch:\t%s", bold(branch))
 	out("Message:\t%s", bold(message))
 	out("Hash:\t%s", bold(commit))
 	out("Date:\t%s", bold(ctime.Format("2006-01-02 15:04:06")))
@@ -259,29 +268,31 @@ func Increase(major, minor, patch bool, special, build string) error {
 	reader := bufio.NewReader(os.Stdin)
 	text, _ := reader.ReadString('\n')
 	if text != "Y\n" {
-		fmt.Println(bold("Version update aborted"))
+		fmt.Println(abort("\nVersion update aborted\n"))
 		return nil
 	}
 
 	// Apply tag
-	if err := exec.Command("git", "tag", "-a", newVersion.String(), "-m", fmt.Sprintf(`"Version %s"`, newVersion.String())).Run(); err != nil {
+	if err := exec.Command("git", "tag", "-a", newVersion.String(), "-m", fmt.Sprintf(`"Version %s"`, newVersion.String()), commit).Run(); err != nil {
 		return fmt.Errorf("could not apply tag: %s", err.Error())
 	}
 
-	fmt.Println(bold("Version updated"))
+	fmt.Println(sucess("\nVersion updated\n"))
 
 	return nil
 }
 
 // List lists all version of all repositories starting with root path
-func List(root string, all bool) {
+func List(root string, all bool) error {
 
 	if root == "" {
 		dir, err := os.Getwd()
 		if err != nil {
-			fmt.Println("could not change directory: %s", err.Error())
+			return fmt.Errorf("could not change directory: %s", err.Error())
 		}
 		root = dir
+	} else if f, err := os.Stat(root); (err != nil && os.IsNotExist(err)) || (err == nil && !f.IsDir()) {
+		return fmt.Errorf("provided root path is not a directory")
 	}
 
 	repos := []string{}
@@ -316,4 +327,5 @@ func List(root string, all bool) {
 	sort.Strings(repos)
 	printVersionTable(repos, repoVersions, !all)
 
+	return nil
 }
