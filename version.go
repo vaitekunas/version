@@ -231,7 +231,7 @@ func Increase(major, minor, patch bool, special, build string) error {
 	// TODO: put all of this in utils.go and unify outputs
 	bold := color.New(color.Bold).Sprint
 	abort := color.New(color.FgHiRed).Add(color.Bold).Sprint
-	sucess := color.New(color.FgHiGreen).Add(color.Bold).Sprint
+	success := color.New(color.FgHiGreen).Add(color.Bold).Sprint
 	bullet := func() string { return color.New(color.FgHiBlue).Sprint("◈") }
 	out := func(s string, a ...interface{}) {
 		if len(a) > 0 {
@@ -277,7 +277,7 @@ func Increase(major, minor, patch bool, special, build string) error {
 		return fmt.Errorf("could not apply tag: %s", err.Error())
 	}
 
-	fmt.Println(sucess("\nVersion updated\n"))
+	fmt.Println(success("\nVersion updated\n"))
 
 	return nil
 }

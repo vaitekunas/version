@@ -40,7 +40,7 @@ able to run version in your shell:
 Running version without any flags will list all the repositories (recursively, starting from the pwd)
 and their highest version available:
 
-``` shell
+```shell
 > version
 
 Highest versions per repository
@@ -75,7 +75,7 @@ Highest versions per repository
 
 Adding the `--all` flag lists all available versions/releases:
 
-```
+```shell
 > cd ~/versailles
 > version --all
 
@@ -110,7 +110,7 @@ All versions of '/home/mindow/versailles'
 
 Running `version increase` without additional flags will propose a patch version update:
 
-``` shell
+```shell
 > version increase
 
 Repository:
@@ -133,7 +133,7 @@ Tag new version? [Y/n] (default: n):
 if current version introduces breaking changes, then a major version update is
 more appropriate:
 
-```
+```shell
 > version increase --major
 
 Repository:
