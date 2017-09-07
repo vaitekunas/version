@@ -95,7 +95,7 @@ func main() {
 
 	// List versions
 	if listCmd.Parsed() {
-		list(*listRootPtr, *listallPtr)
+		list(strings.TrimRight(*listRootPtr,"/"), *listallPtr)
 	}
 
 }

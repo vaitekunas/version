@@ -25,6 +25,7 @@ func TestLarger(t *testing.T) {
     {&Version{Major:1,Minor:0,Patch:0,Special:"gamma.rc2"},&Version{Major:1,Minor:0,Patch:0, Special: "beta.rc3"},true},
     {&Version{Major:1,Minor:0,Patch:0,Special:"beta.1.rc2"},&Version{Major:1,Minor:0,Patch:0, Special: "beta.rc1.1"},false},
     {&Version{Major:1,Minor:0,Patch:0},&Version{Major:1,Minor:0,Patch:1, Special: "alpha.rc1"}, false},
+    {&Version{Major:1,Minor:0,Patch:0,Special:"rc1"},&Version{Major:1,Minor:0,Patch:0}, false},
   }
 
   for i, test := range tests {
