@@ -15,7 +15,7 @@ func printErr(in string, a ...interface{}) {
 	}
 
 	br := color.New(color.FgHiRed)
-  b := color.New(color.FgHiRed).Add(color.Bold)
+	b := color.New(color.FgHiRed).Add(color.Bold)
 	fmt.Printf(" %s %s\n", br.Sprint("◈"), b.Sprint(in))
 }
 
@@ -101,7 +101,7 @@ func printVersionTable(repos []string, repoVersions map[string]*Versions, last b
 		if !ok {
 			continue
 		}
-		if last {
+		if last && len(versions.versions) > 0 {
 			versions.versions = versions.versions[:1]
 		}
 
@@ -120,6 +120,7 @@ func printVersionTable(repos []string, repoVersions map[string]*Versions, last b
 	}
 
 	table.AddFootnote("Version order is based on the semantic versioning specification (http://semver.org/)")
+	table.AddFootnote("Commits without version tags are not shown")
 
 	table.Render(os.Stdout, false, true, false, lentele.LoadTemplate("classic"))
 	fmt.Printf("\n")

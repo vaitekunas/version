@@ -221,11 +221,11 @@ func Increase(major, minor, patch bool, special, build string) error {
 		return fmt.Errorf("current commit already has a version: %s", version.String())
 	}
 
-  // Get branch
-  branch, err := GetBranch(root)
-  if err != nil {
-    return fmt.Errorf("could not get active branch name: %s", err.Error())
-  }
+	// Get branch
+	branch, err := GetBranch(root)
+	if err != nil {
+		return fmt.Errorf("could not get active branch name: %s", err.Error())
+	}
 
 	// Formatting functions
 	// TODO: put all of this in utils.go and unify outputs
@@ -248,7 +248,7 @@ func Increase(major, minor, patch bool, special, build string) error {
 	fmt.Println("")
 
 	fmt.Println("Commit to be tagged as the new version:")
-  out("Branch:\t%s", bold(branch))
+	out("Branch:\t%s", bold(branch))
 	out("Message:\t%s", bold(message))
 	out("Hash:\t%s", bold(commit))
 	out("Date:\t%s", bold(ctime.Format("2006-01-02 15:04:06")))

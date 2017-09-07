@@ -42,16 +42,14 @@ func main() {
 		case "help":
 			if len(os.Args) >= 3 {
 				man(os.Args[2])
-			} else {				
-        man("")
+			} else {
+				man("")
 			}
 			os.Exit(0)
 
-    case "--all", "--root":
-
-    default:
-      flag.Usage()
-      os.Exit(1)
+		case "--help":
+			flag.Usage()
+			os.Exit(1)
 		}
 
 		// Increase version
