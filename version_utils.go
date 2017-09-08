@@ -20,7 +20,7 @@ func GetVersions(dir string) (*Versions, error) {
 	}
 
 	// Get all tags
-	cmd := exec.Command("git", "log", `--pretty="%h\t%at\t%D"`)
+	cmd := exec.Command("git", "log", "--tags", `--pretty="%h\t%at\t%D"`)
 	out, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("could not list versions: %s", err.Error())
