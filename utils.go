@@ -67,7 +67,7 @@ func printVersionTable(repos []string, repoVersions map[string]*Versions, last b
 	} else {
 		if len(repos) > 1 {
 			table.AddTitle("Highest versions per repository")
-		} else {
+		} else if len(repos) == 1 {
 			table.AddTitle(fmt.Sprintf("Highest version of '%s'", repos[0]))
 		}
 	}
